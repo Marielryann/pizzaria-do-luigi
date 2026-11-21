@@ -5,7 +5,7 @@ from flask import Flask, jsonify, request
 
 app = Flask(__name__, static_folder="static", static_url_path="")
 
-# ---------- Dados (os mesmos do script do terminal) ----------
+# ---------- Dados ----------
 precos_sabor = {
     "Mussarela": {"P": 30, "M": 40, "G": 50},
     "Calabresa": {"P": 32, "M": 42, "G": 52},
@@ -14,7 +14,7 @@ precos_sabor = {
     "Quatro queijos": {"P": 38, "M": 50, "G": 62},
     "Camarão": {"P": 45, "M": 58, "G": 72},
 }
-preco_borda = {"P": 6, "M": 8, "G": 10}
+preco_borda = {"P": 6, "M": 8, "G": 10} # preço com a borda (para cada tamanho)
 nome_bebida = {"1": "Água 500 ml", "2": "Refrigerante lata", "3": "Suco natural", "4": "Refrigerante 2 L"}
 preco_bebida = {"Água 500 ml": 4, "Refrigerante lata": 6, "Suco natural": 8, "Refrigerante 2 L": 14}
 frete = 8
