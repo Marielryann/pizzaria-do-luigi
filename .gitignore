@@ -1,0 +1,10 @@
+# Pedidos dos clientes (dados locais, não vão para o GitHub)
+pedidos.json
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+# Editor / sistema
+.vscode/
+.DS_Store

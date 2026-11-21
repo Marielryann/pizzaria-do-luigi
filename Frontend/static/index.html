@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Luigi's Pixel Pizzeria</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=Pixelify+Sans:wght@500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="faixa"><span>Missão do dia: matar a fome</span><i>◆</i><span>Frete grátis acima de R$ <b class="limite">80</b></span></div>
+
+<header class="topo" id="inicio">
+  <a class="marca" href="#inicio"><span class="marca__l">L<em>★</em></span>
+    <span><strong>LUIGI'S</strong><small>Pixel Pizzeria</small></span></a>
+  <nav><a href="#fases">Fases &amp; sabores</a><a href="#montar">Montar pedido</a><a href="#acompanhar">Meu pedido</a></nav>
+  <a class="btn btn--laranja" href="#montar">Jogar! →</a>
+</header>
+
+<section class="hero">
+  <div>
+    <p class="mini"><b></b>Player 1 / Fase 01</p>
+    <h1>A fome é o chefão. <span>Pizza é o power-up!</span></h1>
+    <p class="hero__txt">Monte sua combinação favorita, junte sabores e avance direto para a parte deliciosa.</p>
+    <a class="btn btn--vermelho" href="#montar">Começar a missão →</a>
+    <p class="vidas"><span>♥ ♥ ♥</span> 3 vidas. 1 pizza. Zero arrependimentos.</p>
+  </div>
+  <div class="cena" aria-hidden="true">
+    <i class="nuvem n1"></i><i class="nuvem n2"></i>
+    <div class="bloco-q">?</div>
+    <div class="cena__pizza" id="pizza-hero"></div>
+    <div class="morro m1"></div><div class="morro m2"></div><div class="cano"></div>
+    <div class="yum">+ 1000 yum</div>
+    <div class="chao"><span>Mundo 1-1</span><span>Pizza Park</span></div>
+  </div>
+</section>
+
+<section class="fases" id="fases">
+  <div><b class="icone">★</b><h3>Feita na hora</h3><p>A massa só abre depois que você finaliza a missão.</p></div>
+  <div><b class="icone">◆</b><h3>Meio a meio</h3><p>Dois sabores na mesma pizza, pelo preço do mais caro.</p></div>
+  <div><b class="icone">→</b><h3>Entrega turbo</h3><p>Frete grátis quando o pedido passa de R$ <span class="limite">80</span>.</p></div>
+</section>
+
+<section class="montar" id="montar">
+  <div class="montar__topo">
+    <div><p class="mini"><b></b>Configuração da fase</p><h2 class="titulao">Monte sua pizza!</h2></div>
+    <p class="montar__nota">Escolha os itens e veja sua pontuação aumentar.</p>
+  </div>
+
+  <div class="layout">
+    <div class="passos">
+      <section class="passo">
+        <header><span class="num">01</span><div><h3>Selecione o tamanho</h3><p>Qual é o tamanho da sua missão?</p></div></header>
+        <div id="tamanhos" class="tamanhos"></div>
+      </section>
+
+      <section class="passo">
+        <header><span class="num">02</span><div><h3>Escolha seus sabores</h3><p>Até dois — no meio a meio, vale o sabor mais caro.</p></div>
+          <span class="contador" id="contador">0 / 2</span></header>
+        <div id="sabores" class="sabores"></div>
+      </section>
+
+      <section class="passo">
+        <header><span class="num">03</span><div><h3>Equipamento extra</h3><p>Um upgrade crocante e uma bebida?</p></div></header>
+        <div id="borda"></div>
+        <label class="rotulo" for="bebida">E pra acompanhar</label>
+        <select id="bebida" class="select"></select>
+      </section>
+    </div>
+
+    <aside class="ticket" id="ticket">
+      <div class="ticket__cab"><span>Anote aí</span><span>Luigi nº 01</span></div>
+      <div class="ticket__tit"><h3>Seu pedido</h3><div id="pizza-mini" class="mini-pizza"></div></div>
+      <dl class="linhas">
+        <div><dt id="l-pizza"></dt><dd id="v-pizza"></dd></div>
+        <div id="l-borda" hidden><dt>Borda recheada</dt><dd id="v-borda"></dd></div>
+        <div id="l-bebida" hidden><dt id="n-bebida"></dt><dd id="v-bebida"></dd></div>
+        <div class="tracejado"><dt>Subtotal</dt><dd id="v-subtotal"></dd></div>
+        <div><dt>Entrega</dt><dd id="v-frete"></dd></div>
+      </dl>
+      <div class="total"><span>Total</span><strong id="v-total"></strong></div>
+      <div class="trilho"><div id="barra"></div></div>
+      <p class="nota" id="frete-msg"></p>
+      <p class="erro" id="erro" role="alert" hidden></p>
+      <button class="btn btn--vermelho btn--bloco" id="enviar" type="button">Finalizar missão →</button>
+      <p class="nota nota--c">Seu pedido fica salvo na cozinha.</p>
+    </aside>
+
+    <aside class="ticket ticket--ok" id="sucesso" hidden>
+      <h3>Fase concluída!</h3>
+      <p id="sucesso-msg">Pedido enviado. Já estamos assando.</p>
+      <a class="btn btn--laranja btn--bloco" href="#acompanhar">Ver meu pedido →</a>
+      <button class="btn btn--vermelho btn--bloco" type="button" onclick="location.reload()">Jogar de novo →</button>
+    </aside>
+  </div>
+</section>
+
+<section class="acompanhar" id="acompanhar">
+  <div class="acompanhar__in">
+    <header><span class="num">04</span><div><h3>Acompanhe seu pedido</h3><p>Digite o número que apareceu no fim da missão.</p></div></header>
+    <form id="busca" class="busca">
+      <label class="rotulo" for="num-pedido">Número do pedido</label>
+      <div><input id="num-pedido" class="select" type="number" min="1" inputmode="numeric" placeholder="Ex.: 1" required>
+      <button class="btn btn--laranja" type="submit">Buscar</button></div>
+    </form>
+    <p class="erro" id="busca-erro" role="alert" hidden></p>
+    <div id="recibo" aria-live="polite"></div>
+  </div>
+</section>
+
+<section class="dica">
+  <b class="estrela">★</b>
+  <div><p class="mini">Dica de fase</p><blockquote>“Escolha seus sabores favoritos e vença o chefão da fome.”</blockquote></div>
+  <a class="link" href="#montar">Montar minha pizza →</a>
+</section>
+
+<footer class="rodape">
+  <span>LUIGI'S · <em>Pixel Pizzeria</em></span>
+  <span>Continue? Sempre tem espaço pra pizza.</span>
+  <a href="#inicio">Voltar ao topo</a>
+</footer>
+<script src="app.js"></script>
+</body>
+</html>
