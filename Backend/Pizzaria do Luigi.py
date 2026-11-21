@@ -1,5 +1,5 @@
 # Pizzaria - monte sua pizza (versão terminal)
-# O site React usa a API em server.py; este script continua funcionando no terminal.
+# O site HTML/CSS/JS usa a API em server.py
 
 # ---------- Dicionários de preços ----------
 precos_sabor = {
