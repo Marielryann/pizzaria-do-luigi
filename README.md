@@ -21,7 +21,6 @@ Abra o link mostrado no terminal
 ```
 server.py            API Flask e entrega do site
 static/              index.html, style.css, app.js
-terminal/            versão original do programa, para o terminal
 pedidos.json         criado automaticamente ao fazer pedidos (ignorado pelo git)
 ```
 
