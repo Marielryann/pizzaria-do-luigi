@@ -19,16 +19,27 @@ Abra o link mostrado no terminal
 
 ## Estrutura
 ```
+  <<<<<<< HEAD
 server.py            API Flask e entrega do site
 static/              index.html, style.css, app.js
 pedidos.json         criado automaticamente ao fazer pedidos (ignorado pelo git)
+=======
+Backend/
+  server.py          API Flask e entrega do site
+  cardapio.py        preços e regras (fonte única)
+  pizzaria_terminal.py   versão original, para o terminal
+  pedidos.json       criado automaticamente (ignorado pelo git)
+Frontend/
+  static/            index.html, style.css, app.js
+requirements.txt
+>>>>>>> c6c0c81 (Adiciona dados do cliente, cardápio e correção de bugs)
 ```
 
 ## API
 | Rota | O que faz |
 |------|-----------|
-| `GET /api/cardapio` | Preços, bebidas e regras de frete |
-| `POST /api/pedido` | Valida, calcula o total e salva o pedido |
+| `GET /Backend/cardapio` | Preços, bebidas e regras de frete |
+| `POST /Backend/pedido` | Valida, calcula o total e salva o pedido |
 | `GET /api/pedido/<numero>` | Detalhes e andamento do pedido |
 
 O andamento do pedido é simulado pelo tempo (demonstração).

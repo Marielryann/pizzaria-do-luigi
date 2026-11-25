@@ -2,19 +2,8 @@
    Ordem: dados -> API -> cálculo -> renderização -> eventos. */
 
 // ---------- 1. Dados (iguais ao script Python; fallback se a API estiver offline) ----------
-let menu = {
-  precosSabor: {
-    "Mussarela": { P: 30, M: 40, G: 50 }, "Calabresa": { P: 32, M: 42, G: 52 },
-    "Frango com catupiry": { P: 35, M: 45, G: 56 }, "Portuguesa": { P: 36, M: 47, G: 58 },
-    "Quatro queijos": { P: 38, M: 50, G: 62 }, "Camarão": { P: 45, M: 58, G: 72 },
-  },
-  precoBorda: { P: 6, M: 8, G: 10 },
-  bebidas: {
-    "1": { nome: "Água 500 ml", preco: 4 }, "2": { nome: "Refrigerante lata", preco: 6 },
-    "3": { nome: "Suco natural", preco: 8 }, "4": { nome: "Refrigerante 2 L", preco: 14 },
-  },
-  frete: 8, freteGratisAcima: 80,
-};
+let menu = null;
+
 const TAMANHOS = { P: "Pequena", M: "Média", G: "Grande" };
 const ESCALA = { P: 0.78, M: 0.9, G: 1 };
 const MAX_SABORES = 2;
@@ -25,11 +14,28 @@ const VISUAL = { // [cobertura, recheio]
 };
 
 // ---------- 2. API (rotas do server.py) ----------
-async function http(url, opcoes) {
-  const r = await fetch(url, { headers: { "Content-Type": "application/json" }, ...opcoes });
-  if (!r.ok) throw new Error("Erro " + r.status);
-  return r.json();
+class ErroApi extends Error {
+  constructor(status, mensagem) { super(mensagem); this.status = status; } // status 0 = sem conexão
 }
+
+async function http(url, opcoes) {
+  let r;
+  try {
+    r = await fetch(url, { headers: { "Content-Type": "application/json" }, ...opcoes });
+  } catch {
+    throw new ErroApi(0, "Sem conexão com o servidor");
+  }
+  const corpo = await r.json().catch(() => ({}));
+  if (!r.ok) throw new ErroApi(r.status, corpo.erro || "Erro " + r.status);
+  return corpo;
+}
+
+function mensagemDeErro(e) {
+  if (e.status === 400) return e.message; // o servidor explicou o que está errado
+  if (e.status === 0) return "Sem conexão com o servidor. Confira se ele está rodando e tente de novo.";
+  return "Algo deu errado do nosso lado. Tente de novo em instantes.";
+}
+
 const buscarCardapio = () => http("/api/cardapio");               // GET  -> { precosSabor, precoBorda, bebidas, frete, freteGratisAcima }
 const enviarPedido = (p) => http("/api/pedido", { method: "POST", body: JSON.stringify(p) }); // POST -> { numero, total }
 
@@ -113,12 +119,14 @@ function renderTicket() {
   $("l-pizza").innerHTML = `Pizza ${p.tamanho}<small>${p.sabores.join(" + ") || "Nenhum sabor ainda"}</small>`;
   $("l-borda").hidden = !p.borda; $("l-bebida").hidden = !p.bebidaId;
   if (p.bebidaId) $("n-bebida").textContent = menu.bebidas[p.bebidaId].nome;
+
   animarPreco($("v-pizza"), c.pizza); animarPreco($("v-borda"), c.bordaV); animarPreco($("v-bebida"), c.bebidaV);
   animarPreco($("v-subtotal"), c.subtotal); animarPreco($("v-total"), c.total);
   if (c.frete === 0) { $("v-frete")._v = 0; $("v-frete").textContent = "Grátis"; } else animarPreco($("v-frete"), c.frete);
   $("barra").style.transform = `scaleX(${Math.min(1, c.subtotal / menu.freteGratisAcima)})`;
   $("frete-msg").textContent = c.frete === 0 ? "Frete grátis conquistado!"
     : `Frete grátis em pedidos acima de R$ ${menu.freteGratisAcima}. Falta mais de R$ ${c.falta.toFixed(2).replace(".", ",")}.`;
+
   document.querySelectorAll(".limite").forEach((e) => (e.textContent = menu.freteGratisAcima));
   $("pizza-mini").innerHTML = pizzaSVG(p.sabores, p.borda, "mp");
   $("pizza-mini").style.transform = `scale(${ESCALA[p.tamanho]})`;
@@ -131,8 +139,9 @@ const renderTudo = () => { renderOpcoes(); renderTicket(); };
 // ---------- 5. Eventos ----------
 document.addEventListener("click", (e) => {
   const b = e.target.closest("[data-id]");
-  if (!b) return;
-  const [tipo, valor] = b.dataset.id.split(":");
+  if (!b || !menu) return;
+  const id = b.dataset.id;
+  const [tipo, valor] = id.split(":");
   ultimo = tipo + (valor ?? "");
   if (tipo === "t") pedido.tamanho = valor;
   else if (tipo === "b") pedido.borda = !pedido.borda;
@@ -142,22 +151,38 @@ document.addEventListener("click", (e) => {
     else if (pedido.sabores.length < MAX_SABORES) pedido.sabores.push(valor);
   }
   renderTudo();
+  const novo = document.querySelector(`[data-id="${id}"]`);
+  if (novo && !novo.disabled) novo.focus();
 });
 
 $("bebida").addEventListener("change", (e) => { pedido.bebidaId = e.target.value; renderTicket(); });
 
+// Dados do cliente (campos fixos no HTML: o renderTudo não mexe neles).
+const lerCliente = () => ({
+  nome: $("nome").value.trim(), telefone: $("telefone").value.trim(),
+  endereco: $("endereco").value.trim(), pagamento: $("pagamento").value, obs: $("obs").value.trim(),
+});
+function primeiroErro(c) { // validação rápida para o usuário; quem decide mesmo é o servidor
+  if (c.nome.length < 2) return { campo: "nome", msg: "Informe seu nome." };
+  if (![10, 11].includes(c.telefone.replace(/\D/g, "").length)) return { campo: "telefone", msg: "Informe um telefone válido, com DDD." };
+  if (c.endereco.length < 5) return { campo: "endereco", msg: "Informe o endereço de entrega." };
+  return null;
+}
+const mostrarErro = (msg) => { $("erro").textContent = msg; $("erro").hidden = false; };
+
 $("enviar").addEventListener("click", async () => {
   const btn = $("enviar");
+  const cliente = lerCliente(), falta = primeiroErro(cliente);
+  if (falta) { mostrarErro(falta.msg); $(falta.campo).focus(); return; }
   btn.disabled = true; btn.textContent = "Enviando..."; $("erro").hidden = true;
   try {
-    const r = await enviarPedido({ ...pedido, bebidaId: pedido.bebidaId || null });
+    const r = await enviarPedido({ ...pedido, bebidaId: pedido.bebidaId || null, ...cliente });
     $("sucesso-msg").textContent = `Pedido ${r.numero ? "nº " + r.numero + " " : ""}enviado. Já estamos assando.`;
     $("ticket").hidden = true; $("sucesso").hidden = false;
     try { localStorage.setItem("luigi_ultimo", r.numero); } catch {}
     $("num-pedido").value = r.numero; mostrarPedido(r.numero);
-  } catch {
-    $("erro").textContent = "Não conseguimos enviar o pedido. Confira a conexão e tente de novo.";
-    $("erro").hidden = false; renderTicket();
+  } catch (e) {
+    mostrarErro(mensagemDeErro(e)); renderTicket();
   }
 });
 
@@ -216,9 +241,14 @@ async function mostrarPedido(numero) {
 $("busca").addEventListener("submit", (e) => { e.preventDefault(); mostrarPedido($("num-pedido").value); });
 
 // ---------- 7. Início ----------
+const preencherPagamentos = () =>
+  ($("pagamento").innerHTML = menu.pagamentos.map((p) => `<option>${p}</option>`).join(""));
+
 $("pizza-hero").innerHTML = pizzaSVG(["Calabresa"], true, "hp"); // pizza decorativa da cena
-renderTudo();
-buscarCardapio().then((m) => { menu = m; renderTudo(); }).catch(() => {}); // sem API, usa o cardápio local
+$("enviar").disabled = true;
+buscarCardapio()
+  .then((m) => { menu = m; preencherPagamentos(); renderTudo(); })
+  .catch(() => mostrarErro("Não conseguimos carregar o cardápio. Confira se o servidor está rodando e atualize a página."));
 
 // Se o cliente já fez um pedido neste navegador, mostra o último automaticamente.
-try { const u = localStorage.getItem("luigi_ultimo"); if (u) { $("num-pedido").value = u; mostrarPedido(u); } } catch {}
+try { const u = localStorage.getItem("luigi_ultimo"); if (u) { $("num-pedido").value = u; mostrarPedido(u, { silencioso: true }); } } catch {}

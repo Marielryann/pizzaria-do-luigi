@@ -69,6 +69,20 @@
       </section>
     </div>
 
+    <section class="passo">
+      <header><span class="num">04</span><div><h3>Dados da entrega</h3><p>Pra onde o entregador deve ir?</p></div></header>
+      <label class="rotulo" for="nome">Nome</label>
+       <input id="nome" class="select" type="text" maxlength="60" autocomplete="name">
+      <label class="rotulo" for="telefone">Telefone (com DDD)</label>
+      <input id="telefone" class="select" type="tel" inputmode="numeric" maxlength="15" autocomplete="tel" placeholder="(81) 91234-5678">
+      <label class="rotulo" for="endereco">Endereço de entrega</label>
+      <input id="endereco" class="select" type="text" maxlength="120" autocomplete="street-address" placeholder="Rua, número, bairro">
+      <label class="rotulo" for="pagamento">Pagamento</label>
+      <select id="pagamento" class="select"></select>
+      <label class="rotulo" for="obs">Observações (opcional)</label>
+      <input id="obs" class="select" type="text" maxlength="200" placeholder="Ex.: sem cebola, portão azul">
+    </section>
+
     <aside class="ticket" id="ticket">
       <div class="ticket__cab"><span>Anote aí</span><span>Luigi nº 01</span></div>
       <div class="ticket__tit"><h3>Seu pedido</h3><div id="pizza-mini" class="mini-pizza"></div></div>
@@ -98,7 +112,7 @@
 
 <section class="acompanhar" id="acompanhar">
   <div class="acompanhar__in">
-    <header><span class="num">04</span><div><h3>Acompanhe seu pedido</h3><p>Digite o número que apareceu no fim da missão.</p></div></header>
+    <header><span class="num">05</span><div><h3>Acompanhe seu pedido</h3><p>Digite o número que apareceu no fim da missão.</p></div></header>
     <form id="busca" class="busca">
       <label class="rotulo" for="num-pedido">Número do pedido</label>
       <div><input id="num-pedido" class="select" type="number" min="1" inputmode="numeric" placeholder="Ex.: 1" required>
