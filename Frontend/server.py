@@ -44,7 +44,7 @@ def status_do(pedido):
     """Andamento simulado pelo tempo (para demonstração):
     0 Recebido, 1 No forno, 2 Saiu para entrega, 3 Entregue."""
     seg = time.time() - pedido["criado"]
-    return 0 if seg < 30 else 1 if seg < 90 else 2 if seg < 150 else 3
+    return 0 if seg < 15 else 1 if seg < 30 else 2 if seg < 60 else 3
 
 
 @app.get("/")
@@ -65,21 +65,30 @@ def cardapio():
 
 @app.post("/api/pedido")
 def pedido():
-    d = request.get_json(silent=True) or {}
-    tamanho, sabores = d.get("tamanho"), d.get("sabores") or []
-    bebida_id = d.get("bebidaId")
-    # Validação: o servidor não confia no navegador
-    if (tamanho not in preco_borda or not 1 <= len(sabores) <= 2
-            or any(s not in precos_sabor for s in sabores)
-            or (bebida_id is not None and bebida_id not in nome_bebida)):
+    d = request.get_json(silent=True)
+    if not isinstance(d, dict):
         return jsonify(erro="Pedido inválido"), 400
 
-    valores = calcular(tamanho, sabores, bool(d.get("borda")), bebida_id)
+    tamanho = d.get("tamanho")
+    sabores = d.get("sabores")
+    bebida_id = d.get("bebidaId")
+    borda = d.get("borda")
+
+    if (not isinstance(tamanho, str) or tamanho not in preco_borda
+            or not isinstance(sabores, list) or not 1 <= len(sabores) <= 2
+            or not all(isinstance(s, str) and s in precos_sabor for s in sabores)
+            or len(set(sabores)) != len(sabores)
+            or not isinstance(borda, bool)
+            or (bebida_id is not None
+                and (not isinstance(bebida_id, str) or bebida_id not in nome_bebida))):
+        return jsonify(erro="Pedido inválido"), 400
+
+    valores = calcular(tamanho, sabores, borda, bebida_id)
 
     pedidos = ler_pedidos()
     numero = len(pedidos) + 1
     pedidos.append({"numero": numero, "criado": time.time(), "tamanho": tamanho, "sabores": sabores,
-                    "borda": bool(d.get("borda")), "bebidaId": bebida_id, **valores})
+                    "borda": borda, "bebidaId": bebida_id, **valores})
     with open(ARQUIVO, "w", encoding="utf-8") as f:
         json.dump(pedidos, f, ensure_ascii=False, indent=2)
     return jsonify(numero=numero, total=valores["total"])

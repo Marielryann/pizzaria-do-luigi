@@ -168,8 +168,13 @@ let timer = null;
 
 // Monta o recibo: etapas do andamento + itens + total.
 function reciboHTML(p) {
-  const etapas = ETAPAS.map((e, i) =>
-    `<li class="${i < p.status ? "feito" : i === p.status ? "atual" : ""}"><b>${i < p.status ? "✓" : i + 1}</b>${e}</li>`).join("");
+  const fim = p.status === ETAPAS.length - 1;   // true quando o pedido já foi entregue
+  const etapas = ETAPAS.map((e, i) => {
+    const feito = fim || i < p.status;
+    const classe = feito ? "feito" : i === p.status ? "atual" : "";
+    return `<li class="${classe}"><b>${feito ? "✓" : i + 1}</b>${e}</li>`;
+}).join("");
+
   return `<div class="ticket__cab"><span>Pedido nº ${p.numero}</span><span>${ETAPAS[p.status]}</span></div>
     <ol class="etapas">${etapas}</ol>
     <dl class="linhas">
@@ -193,7 +198,14 @@ async function mostrarPedido(numero) {
   try {
     $("busca-erro").hidden = true;
     const p = await atualizar();
-    if (p.status < ETAPAS.length - 1) timer = setInterval(() => atualizar().catch(() => {}), 5000);
+    if (p.status < ETAPAS.length - 1) {
+      timer = setInterval(async () => {
+        try {
+          const novo = await atualizar();
+          if (novo.status >= ETAPAS.length - 1) clearInterval(timer);
+        } catch {}
+      }, 5000);
+    }
   } catch {
     $("recibo").innerHTML = "";
     $("busca-erro").textContent = `Não achamos o pedido nº ${numero}. Confira o número e tente de novo.`;
